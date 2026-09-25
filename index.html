@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102d44">
+  <meta name="description" content="A reproducible actuarial case study of motor claim frequency, severity, calibration and an illustrative reinsurance layer by Sukriti Agarwal.">
+  <title>The rare claim problem | Sukriti Agarwal</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to analysis</a>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="Sukriti Agarwal, back to top"><span class="brand-mark" aria-hidden="true">∑</span> Sukriti Agarwal</a>
+    <nav aria-label="Main navigation">
+      <a href="#finding">Finding</a><a href="#model">Model</a><a href="#validation">Evidence</a><a href="#explore">Explore</a><a href="#method">Method</a>
+    </nav>
+    <a class="header-cta" href="#source">View source <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-main">
+        <div class="hero-copy">
+          <p class="hero-kicker">An actuarial case study / motor liability</p>
+          <h1 id="hero-title">The rare claim<br><em>problem.</em></h1>
+          <p class="hero-lead">How should an insurer turn exposure and claims into an expected loss, and how much confidence should it place in the tail?</p>
+          <div class="hero-actions"><a class="button-primary" href="#finding">Read the finding <span aria-hidden="true">↓</span></a><a class="text-link light-link" href="#explore">Try the risk desk</a></div>
+        </div>
+        <div class="hero-viz" aria-label="A small fraction of claims accounts for a large share of total losses">
+          <div class="viz-top"><span>Share of all claims</span><strong id="hero-claim-share">0.36%</strong></div>
+          <div class="tiny-track"><div id="tiny-fill"></div></div>
+          <div class="viz-rule"></div>
+          <div class="viz-main"><span>Share of total loss</span><strong id="hero-loss-share">28.6%</strong></div>
+          <div class="large-track"><div id="large-fill"></div></div>
+          <p><b id="tail-count">59</b> claims above 50,000 amount units, out of <b id="all-claims">16,181</b> claims. These values describe this historical sample.</p>
+          <div class="viz-corner" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="hero-foot"><span>Public CASdatasets portfolio</span><span>Policy-level holdout</span><span>CS1 methods in practice</span><a href="#finding">Scroll to the analysis <span aria-hidden="true">↓</span></a></div>
+    </section>
+
+    <section class="section section-finding" id="finding" aria-labelledby="finding-title">
+      <div class="section-heading"><span class="section-index">The question</span><div><h2 id="finding-title">An average can hide the decision.</h2><p>The book contains enough exposure to estimate claim frequency. Large losses make the average claim size much less stable.</p></div></div>
+      <div class="finding-grid">
+        <article class="finding-main"><span class="mini-label">Held-out verdict</span><p class="finding-statement">Model claim counts by risk. Treat severity as a portfolio estimate until the tail is better understood.</p><p>The Poisson model improved claim-count deviance on validation and test. A more complex Gamma severity model lost to a constant mean on validation, so the final expected-loss calculation uses the simpler severity estimate.</p></article>
+        <div class="finding-stats" aria-label="Key results"><div><span>Frequency observed / expected</span><strong id="freq-oe">—</strong><small>Test policies</small></div><div><span>Total loss observed / expected</span><strong id="cost-oe">—</strong><small>Test policies</small></div><div><span>Poisson deviance improvement</span><strong id="freq-improvement">—</strong><small>Against constant-rate baseline</small></div></div>
+      </div>
+      <p class="caption">Observed / expected (O/E) is 1.00 when the aggregate prediction matches the observed total. Values below 1.00 mean predicted losses exceed observed losses.</p>
+    </section>
+
+    <section class="section data-section" id="portfolio" aria-labelledby="portfolio-title">
+      <div class="section-heading"><span class="section-index">The portfolio</span><div><h2 id="portfolio-title">One policy row. Zero or more claims.</h2><p>Exposure is measured in policy-years. Claim amounts join to policies only after the train, validation and test split.</p></div></div>
+      <div class="portfolio-strip"><div><b id="policy-count">—</b><span>policies</span></div><div><b id="claim-count">—</b><span>claims</span></div><div><b id="exposure-years">—</b><span>policy-years</span></div><div><b id="split-values">70 / 15 / 15</b><span>train / validate / test</span></div></div>
+      <div class="distribution"><div class="distribution-copy"><h3>Where loss sits</h3><p>The claim-size distribution is strongly concentrated in its largest observations. The bars compare the share of claim count with the share of total recorded loss in each amount band.</p><p class="aside-note">Amount units follow the source data. The provider does not specify a currency.</p></div><div class="bar-chart-wrap"><div class="chart-legend"><span><i class="legend-claims"></i>Claim count</span><span><i class="legend-loss"></i>Total loss</span></div><div id="severity-bars" class="severity-bars" role="img" aria-label="Claims and total loss by claim amount band"></div></div></div>
+    </section>
+
+    <section class="section model-section" id="model" aria-labelledby="model-title">
+      <div class="section-heading"><span class="section-index">The model</span><div><h2 id="model-title">Build from frequency × severity.</h2><p>Two familiar CS1 generalized linear models turn a policy’s characteristics into an expected claim cost.</p></div></div>
+      <div class="equation-board"><div class="equation"><span class="equation-name">Claim count</span><strong>E[N<sub>i</sub>] = exposure<sub>i</sub> × exp(X<sub>i</sub>β)</strong><p>Poisson GLM with a log exposure offset. Driver age, vehicle age, power, fuel, region and log population density enter as predictors.</p></div><span class="multiply" aria-hidden="true">×</span><div class="equation"><span class="equation-name">Claim size</span><strong>E[S<sub>i</sub>] = μ<sub>S</sub></strong><p>A Gamma log-link GLM was tested. Validation favoured the training-set mean severity, so μ<sub>S</sub> is used in the final calculation.</p></div><span class="equals" aria-hidden="true">=</span><div class="equation result-equation"><span class="equation-name">Expected loss</span><strong>E[C<sub>i</sub>] = E[N<sub>i</sub>] × E[S<sub>i</sub>]</strong><p>Pure expected claim cost before expenses, profit, inflation or a risk margin.</p></div></div>
+      <p class="caption">This multiplication assumes frequency and average claim size can be combined as modelled. It is an approximation, not a commercial premium.</p>
+    </section>
+
+    <section class="section evidence-section" id="validation" aria-labelledby="validation-title">
+      <div class="section-heading"><span class="section-index">The evidence</span><div><h2 id="validation-title">The holdout tells a mixed story.</h2><p>The final test set was evaluated once after the validation decision.</p></div></div>
+      <div class="validation-grid"><div class="score-table"><h3>Out-of-sample deviance <small>lower is better</small></h3><div class="score-head"><span>Component</span><span>Constant baseline</span><span>GLM candidate</span></div><div class="score-row"><span>Claim frequency</span><b id="poisson-base">—</b><b id="poisson-model">—</b></div><div class="score-row"><span>Claim severity</span><b id="gamma-base">—</b><b id="gamma-model">—</b></div><p>The frequency GLM wins modestly. The severity GLM performs worse and is rejected using validation data.</p></div><div class="tail-note"><span class="mini-label">Why the gap?</span><strong id="train-test-severity">—</strong><p>Average claim amount in the training and test claims, respectively. A few large claims can shift the mean materially.</p><div class="tail-note-rule"></div><p>Pearson dispersion of the training Poisson model: <b id="dispersion">—</b>. Values above 1 signal extra count variation beyond the basic Poisson assumption.</p></div></div>
+      <div class="calibration-panel"><div class="calibration-top"><div><h3>What happened by predicted risk?</h3><p>Ten equally sized groups of test policies, sorted by predicted annual expected loss.</p></div><div class="segmented" role="group" aria-label="Calibration measure"><button type="button" class="selected" data-measure="claims" aria-pressed="true">Claim counts</button><button type="button" data-measure="cost" aria-pressed="false">Total loss</button></div></div><div id="calibration-chart" class="calibration-chart" role="img" aria-label="Observed versus expected results by predicted risk decile"></div><div class="chart-legend calibration-legend"><span><i class="legend-claims"></i>Expected</span><span><i class="legend-loss"></i>Observed</span></div></div>
+      <p class="caption">The policy bootstrap 95% interval for the held-out total-loss O/E is <b id="bootstrap-interval">—</b>. It describes uncertainty in this test-book ratio with the fitted model held fixed; it is not a model parameter interval.</p>
+    </section>
+
+    <section class="section explore-section" id="explore" aria-labelledby="explore-title">
+      <div class="section-heading"><span class="section-index">Explore the fitted model</span><div><h2 id="explore-title">Try an underwriting scenario.</h2><p>Change pre-claim policy characteristics to see the fitted annual claim frequency and expected loss. Values are illustrative predictions from this historical dataset.</p></div></div>
+      <div class="risk-desk"><form id="risk-form" class="risk-controls"><label>Driver age band<select name="driver"><option>18–25</option><option>26–35</option><option selected>36–55</option><option>56–70</option><option>71+</option></select></label><label>Vehicle age band<select name="car"><option selected>0–2</option><option>3–7</option><option>8–15</option><option>16+</option></select></label><label>Vehicle power<select name="power"><option>d–f</option><option selected>g–j</option><option>k–o</option></select></label><label>Fuel<select name="gas"><option selected>Diesel</option><option>Regular</option></select></label><label>Region<select name="region" id="region-select"></select></label><label>Population density <span class="label-unit">per km²</span><input name="density" type="number" min="0" max="30000" step="1" value="500"></label></form><div class="risk-output" aria-live="polite"><span class="mini-label">One policy-year</span><div class="risk-number" id="annual-cost">—</div><span class="risk-unit">expected claim amount units</span><div class="risk-output-rule"></div><div class="risk-factors"><div><span>Expected claim frequency</span><b id="annual-frequency">—</b></div><div><span>Selected mean severity</span><b id="selected-severity">—</b></div><div><span>Versus the training portfolio</span><b id="relative-risk">—</b></div></div><p>Not a premium quote. Policy terms, expenses, inflation, capital and selection effects are outside this model.</p></div></div>
+    </section>
+
+    <section class="section layer-section" id="layer" aria-labelledby="layer-title">
+      <div class="section-heading"><span class="section-index">Risk transfer</span><div><h2 id="layer-title">What if losses above a threshold were ceded?</h2><p>Explore an illustrative per-claim excess-of-loss layer on the observed severity distribution.</p></div></div>
+      <div class="layer-equation">Ceded amount per claim = min(max(claim amount − attachment, 0), limit)</div>
+      <div class="layer-desk"><div class="layer-controls"><label>Attachment<select id="attachment"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="10000">10,000</option><option value="25000">25,000</option><option value="50000">50,000</option></select></label><label>Layer limit<select id="limit"><option value="5000">5,000</option><option value="10000">10,000</option><option value="25000" selected>25,000</option><option value="50000">50,000</option><option value="100000">100,000</option></select></label></div><div class="layer-results" aria-live="polite"><div><span>Historical claims above attachment</span><strong id="above-attachment">—</strong></div><div><span>Empirical ceded loss per exposure-year</span><strong id="ceded-exposure">—</strong></div><div><span>Share of recorded loss ceded</span><strong id="ceded-share">—</strong></div></div></div><p class="layer-warning">This is an empirical sensitivity illustration, not a treaty price. At higher attachments there are few observed claims; the dataset cannot establish a reliable extreme tail, and it has no event clustering, reinstatements, expenses, inflation or market terms.</p>
+    </section>
+
+    <section class="section method-section" id="method" aria-labelledby="method-title"><div class="section-heading"><span class="section-index">Method and limits</span><div><h2 id="method-title">A result that can be checked.</h2><p>The project uses the authors’ linked frequency and severity files, with no manually assembled claims.</p></div></div><div class="method-grid"><div class="method-steps"><div><b>01</b><h3>Audit the join</h3><p>Check 413,169 unique policies, positive exposure, 16,181 positive claim amounts, every claim linked, and claim counts equal the claim records.</p></div><div><b>02</b><h3>Split before fitting</h3><p>Assign policies 70% train, 15% validation, 15% test with a fixed seed. Claim rows inherit the parent policy split.</p></div><div><b>03</b><h3>Fit and select</h3><p>Fit Poisson frequency and Gamma severity GLMs on training data. Choose components by validation deviance against constant baselines.</p></div><div><b>04</b><h3>Test once</h3><p>Report held-out deviance, aggregate O/E, risk-decile calibration, overdispersion and a policy bootstrap interval.</p></div></div><aside class="limits"><h3>Read the limits before the result</h3><ul><li>The original insurer is unidentified and the period of this dataset is not specified in its documentation.</li><li>Some claim amounts are fixed under the French IRSA-IDA settlement convention.</li><li>The source does not name a currency for claim amounts.</li><li>No time stamps or event identifiers support catastrophe clustering or time-based validation.</li><li>The severity tail and any high attachment layer are especially unstable.</li></ul></aside></div></section>
+
+    <section class="section source-section" id="source" aria-labelledby="source-title"><div class="section-heading"><span class="section-index">Reproduce and cite</span><div><h2 id="source-title">Open the workings.</h2><p>Run the analysis locally with base R. The script fetches the source files directly from the CASdatasets authors and writes the tables used here.</p></div></div><div class="source-links"><a href="analysis.R" download><span>Analysis script</span><b>R source ↗</b></a><a href="README.md" download><span>Reproduction guide</span><b>Markdown ↗</b></a><a href="results/metrics.csv" download><span>Held-out metrics</span><b>CSV ↗</b></a><a href="results/calibration.csv" download><span>Calibration table</span><b>CSV ↗</b></a></div><p class="source-citation">Data: C. Dutang and A. Charpentier, <a href="https://dutangc.github.io/CASdatasets/reference/freMTPL.html" target="_blank" rel="noopener">CASdatasets French Motor Third-Part Liability datasets</a>, DOI <a href="https://doi.org/10.57745/P0KHAG" target="_blank" rel="noopener">10.57745/P0KHAG</a>. Methods follow the <a href="https://actuaries.org.uk/media/5xzbwoyf/cs1_syllabus-2026-_final-proof.pdf" target="_blank" rel="noopener">IFoA CS1 syllabus</a>. This independent student project is not affiliated with the data provider or any insurer.</p></section>
+  </main>
+  <footer><span>© 2026 Sukriti Agarwal</span><span>Actuarial statistics, applied with care.</span><a href="#top">Back to top ↑</a></footer>
+</body>
+</html>
