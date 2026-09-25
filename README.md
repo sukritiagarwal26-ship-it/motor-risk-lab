@@ -1,6 +1,8 @@
 # The rare claim problem
 
-An independent actuarial statistics portfolio project by **Sukriti Agarwal**. The [interactive case study](index.html) estimates motor liability claim frequency, tests whether segmentation helps claim severity, and explores an illustrative per-claim excess-of-loss layer.
+**[Open the interactive website](https://sukritiagarwal26-ship-it.github.io/motor-risk-lab/)**
+
+An independent actuarial statistics portfolio project by **Sukriti Agarwal**. The interactive case study estimates motor liability claim frequency, tests whether segmentation helps claim severity, and explores an illustrative per-claim excess-of-loss layer.
 
 ## Main result
 
